@@ -3,6 +3,7 @@ package main
 import (
 	"freesnow/api"
 	"freesnow/config"
+	"freesnow/data"
 	log2 "freesnow/log"
 )
 
@@ -13,6 +14,11 @@ func main() {
 	// get config for server
 	cfg := config.LoadConfig()
 
+	// connect to the database
+	models := data.Initialize(cfg, log)
+
 	// run the app
-	api.Run(cfg, log)
+	api.Run(cfg, log, models)
+
+	defer models.CloseConnection(log)
 }

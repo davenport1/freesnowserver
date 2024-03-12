@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"freesnow/config"
 	"freesnow/data"
@@ -16,36 +15,23 @@ import (
 
 const version = "1.0.0"
 
-type application struct {
+type Application struct {
 	config *config.Config
-	logger *log.Logger
+	Logger *log.Logger
 	models data.Models
 }
 
-func Run(cfg *config.Config, logger *log.Logger) {
+// Run - init and run the server
+func Run(cfg *config.Config, logger *log.Logger, models data.Models) {
 	// create a done channel for graceful shutdown of the server
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-	// connect to database
-	db, err := sql.Open("postgres", cfg.DSN)
-	if err != nil {
-		logger.Fatal(err)
-	}
-
-	models := data.NewModels(db)
-
 	// Initialize app with config and logger
-	app := &application{
+	app := &Application{
 		config: cfg,
-		logger: logger,
+		Logger: logger,
 		models: models,
-	}
-
-	defer db.Close()
-
-	if err := db.Ping(); err != nil {
-		logger.Fatal(err)
 	}
 
 	logger.Printf("database connection pool established")
