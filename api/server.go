@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"freesnow/config"
 	"freesnow/data"
@@ -47,7 +48,7 @@ func Run(cfg *config.Config, logger *log.Logger, models data.Models) {
 
 	// begin listening within go routine, handle error
 	go func() {
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Fatal(err)
 		}
 	}()
