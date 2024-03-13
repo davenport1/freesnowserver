@@ -2,146 +2,45 @@ package data
 
 import (
 	"database/sql"
-	"errors"
-	"fmt"
-	"github.com/lib/pq"
+	"freesnow/common"
 	"time"
 )
 
-type Book struct {
-	ID        int64     `json:"id"`
-	CreatedAt time.Time `json:"-"` // will not be marshalled as json
-	Title     string    `json:"title"`
-	Published int       `json:"published,omitempty"`
-	Pages     int       `json:"pages,omitempty"`
-	Genres    []string  `json:"genres,omitempty"`
-	Rating    float64   `json:"rating,omitempty"`
-	Version   int32     `json:"-"`
+type SkiResort struct {
+	ID              int64
+	ResortName      string
+	Coordinates     common.Coordinates
+	CreatedAt       time.Time
+	SnowReport      SnowReport
+	WeatherForecast WeatherForecast
+	TrailReport     TrailReport
+	LiftReport      LiftReport
+	Version         int32
 }
 
-type BookModel struct {
-	DB *sql.DB
+type SnowReport struct {
 }
 
-func (b BookModel) Insert(book *Book) error {
-	query := `
-	INSERT INTO books (title, published, pages, genres, rating)
-	VALUES ($1, $2, $3, $4, $5)
-	RETURNING id, created_at, version`
-
-	fmt.Println("Query created")
-
-	args := []interface{}{book.Title, book.Published, book.Pages, pq.Array(book.Genres), book.Rating}
-
-	fmt.Println("args:")
-	fmt.Print(args)
-	fmt.Println()
-
-	// return auto generated system values to Go object
-	return b.DB.QueryRow(query, args...).Scan(&book.ID, &book.CreatedAt, &book.Version)
+type WeatherForecast struct {
 }
 
-func (b BookModel) Get(id int64) (*Book, error) {
-	if id < 1 {
-		return nil, errors.New("record not found")
-	}
-
-	query := `
-	SELECT id, created_at, title, published, pages, genres, rating, version
-	FROM books
-	WHERE id = $1`
-
-	var book Book
-
-	if err := b.DB.QueryRow(query, id).Scan(
-		&book.ID,
-		&book.CreatedAt,
-		&book.Title,
-		&book.Published,
-		&book.Pages,
-		pq.Array(&book.Genres),
-		&book.Rating,
-		&book.Version,
-	); err != nil {
-		switch {
-		case errors.Is(err, sql.ErrNoRows):
-			return nil, errors.New("record not found")
-		default:
-			return nil, err
-		}
-	}
-
-	return &book, nil
+type TrailReport struct {
 }
 
-func (b BookModel) Update(book *Book) error {
-	query := `
-	UPDATE books 
-	SET title = $1, published = $2, pages = $3, genres = $4, rating = $5, version + 1
-	WHERE id = $6 AND version = $7
-	RETURNING version`
-
-	args := []interface{}{book.Title, book.Published, book.Pages, pq.Array(book.Genres), book.Rating, book.ID, book.Version}
-	return b.DB.QueryRow(query, args...).Scan(&book.Version)
+type LiftReport struct {
 }
 
-func (b BookModel) Delete(id int64) error {
-	query := `
-	DELETE FROM books
-	WHERE id = $1`
-
-	results, err := b.DB.Exec(query, id)
-	if err != nil {
-		return err
-	}
-
-	rowsAffected, err := results.RowsAffected()
-	if err != nil {
-		return err
-	}
-
-	if rowsAffected == 0 {
-		return errors.New("record not found")
-	}
-
-	return nil
+type SkiResortModel struct {
+	Db *sql.DB
 }
 
-func (b BookModel) GetAll() ([]*Book, error) {
-	query := `
-	SELECT * FROM books ORDER BY id`
+// InsertNewResort - Creates a new resort with the given resort.
+func (s SkiResortModel) InsertNewResort(resort *SkiResort) error {
+	query := `SOME SQL`
 
-	rows, err := b.DB.Query(query)
-	if err != nil {
-		return nil, err
+	args := []interface{}{
+		resort.ResortName,
 	}
 
-	defer rows.Close()
-
-	books := []*Book{}
-
-	for rows.Next() {
-		var book Book
-
-		if err := rows.Scan(
-			&book.ID,
-			&book.CreatedAt,
-			&book.Title,
-			&book.Published,
-			&book.Pages,
-			pq.Array(&book.Genres),
-			&book.Rating,
-			&book.Version,
-		); err != nil {
-			return nil, err
-		}
-
-		books = append(books, &book)
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return books, nil
+	return s.Db.QueryRow(query, args...).Scan(&resort.ID, &resort.CreatedAt, &resort.Version)
 }

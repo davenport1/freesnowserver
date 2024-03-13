@@ -4,21 +4,21 @@ import (
 	"freesnow/api"
 	"freesnow/config"
 	"freesnow/data"
-	log2 "freesnow/log"
+	"freesnow/log"
 )
 
 func main() {
 	// configure logger
-	log := log2.NewLogger()
+	logger := log.NewLogger()
 
 	// get config for server
 	cfg := config.LoadConfig()
 
 	// connect to the database
-	models := data.Initialize(cfg, log)
+	models := data.Initialize(cfg, logger)
 
 	// run the app
-	api.Run(cfg, log, models)
+	api.Run(cfg, logger, models)
 
-	defer models.CloseConnection(log)
+	defer models.CloseConnection(logger)
 }
