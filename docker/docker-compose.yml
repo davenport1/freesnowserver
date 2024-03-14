@@ -1,13 +1,15 @@
+name: freesnow
 version: '2'
 
 services:
   postgres:
     image: postgres:latest
     ports:
-      - "5433:5432"
+      - "5432:5432"
     environment:
-      POSTGRES_DB: freesnow-db
+      POSTGRES_DB: freesnow_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: mysecretpassword
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - /postgres_data:/var/lib/postgresql/data
