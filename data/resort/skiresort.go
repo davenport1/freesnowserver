@@ -2,21 +2,21 @@ package resort
 
 import (
 	"database/sql"
-	"freesnow/common"
+	"freesnow/data/coordinates"
 	"freesnow/data/weather"
 	"time"
 )
 
 type SkiResort struct {
-	ID              int64              `json:"id"`
-	ResortName      string             `json:"resortName"`
-	Coordinates     common.Coordinates `json:"coordinates"`
-	CreatedAt       time.Time          `json:"createdAt"`
-	SnowReport      SnowReport         `json:"snowReport"`
-	WeatherForecast weather.Forecast   `json:"weatherForecast"`
-	TrailReport     TrailReport        `json:"trailReport"`
-	LiftReport      LiftReport         `json:"liftReport"`
-	Version         int32              `json:"version"`
+	ID              int64                   `json:"id"`
+	ResortName      string                  `json:"resortName"`
+	Coordinates     coordinates.Coordinates `json:"coordinates"`
+	CreatedAt       time.Time               `json:"createdAt"`
+	SnowReport      SnowReport              `json:"snowReport"`
+	WeatherForecast weather.Forecast        `json:"weatherForecast"`
+	TrailReport     TrailReport             `json:"trailReport"`
+	LiftReport      LiftReport              `json:"liftReport"`
+	Version         int32                   `json:"version"`
 }
 
 type SkiResortModel struct {
@@ -27,8 +27,10 @@ type SkiResortModel struct {
 func (s SkiResortModel) InsertNewResort(resort *SkiResort) error {
 	resort.CreatedAt = time.Now().UTC()
 	timezone := "PST"
-	query := `INSERT INTO ski_resort (resort_name, created_at, timezone, version)
-				VALUES ($1, $2, $3, $4)`
+	query := `
+		INSERT INTO ski_resort (resort_name, created_at, timezone, version)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id, created_at, version`
 
 	args := []interface{}{
 		resort.ResortName,
