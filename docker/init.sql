@@ -7,6 +7,7 @@ DO $$BEGIN
     CREATE DATABASE freesnow_db;
 END IF;
 END$$;
+
 -- SWITCH TO DATABASE
 \c freesnow_db
 
@@ -17,9 +18,10 @@ CREATE TABLE IF NOT EXISTS ski_resort (
     id SERIAL PRIMARY KEY,
     resort_name VARCHAR(255) NOT NULL,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_updated TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    location geometry,
     timezone VARCHAR(50),
-    version INT
+    version INT DEFAULT 1
 );
 
 CREATE TABLE IF NOT EXISTS snow_report (
@@ -59,8 +61,8 @@ CREATE TABLE IF NOT EXISTS weather_forecast_day(
     humidity_percentage INT,
     temperature_feels_like INT,
     temperature_wind_chill INT,
-    sunrise TIMESTAMPTZ,
-    sunset TIMESTAMPTZ
+    sunrise TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    sunset TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CREATE RELATIONSHIPS
