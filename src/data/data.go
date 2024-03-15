@@ -1,17 +1,20 @@
 package data
 
-import "database/sql"
+import (
+	"database/sql"
+	"freesnow/data/resort"
+)
 
 // Models - struct containing database entities and the database connection
 type Models struct {
-	DB    *sql.DB
-	Books BookModel
+	DB         *sql.DB
+	SkiResorts resort.SkiResortModel
 }
 
 // NewModels - Creates a Models struct with the database connection and database entities
 func NewModels(db *sql.DB) Models {
 	return Models{
-		Books: BookModel{DB: db},
-		DB:    db,
+		DB:         db,
+		SkiResorts: resort.SkiResortModel{Db: db},
 	}
 }
