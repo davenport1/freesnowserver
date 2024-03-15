@@ -52,6 +52,7 @@ func Run(cfg *config.Config, logger *log.Logger, models data.Models) {
 			logger.Fatal(err)
 		}
 	}()
+
 	logger.Printf("Starting %s server on %s", cfg.Env, addr)
 
 	<-done // Interrupt begun
