@@ -50,6 +50,12 @@ go build
 go run .
 ```
 
+**Make sure to add the FREESNOW_DB_DSN environment variable to your system environment variables,
+for example with mac osx:**
+```bash
+export FREESNOW_DB_DSN=postgres://<postgres-user>:<postgres-password>@localhost:5433/freesnow_db?sslmode=disable
+```
+
 6. **Access the Server**: Once the server is running, you can access it through the 
 specified port (default port: 8080).
 
