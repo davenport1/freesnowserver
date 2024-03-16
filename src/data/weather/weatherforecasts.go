@@ -5,9 +5,8 @@ import (
 	"time"
 )
 
-type Forecast struct {
+type WeatherForecast struct {
 	ID                 int64                `json:"id"`
-	SkiResortId        int64                `json:"skiResortId"`
 	TempHigh           int64                `json:"temperatureHigh"`
 	TempLow            int64                `json:"temperatureLow"`
 	WindDirection      int64                `json:"windDirection"`
@@ -18,4 +17,16 @@ type Forecast struct {
 	TempWindChill      int64                `json:"temperatureWithWindChill"`
 	Sunrise            time.Time            `json:"sunriseTime"`
 	Sunset             time.Time            `json:"sunsetTime"`
+}
+
+type ForecastResort struct {
+	ID              int64           `json:"id"`
+	SkiResortId     int64           `json:"skiResortId"`
+	WeatherForecast WeatherForecast `json:"weatherForecast"`
+}
+
+type ForecastBackcountry struct {
+	ID                int64           `json:"id"`
+	BackcountryZoneId int64           `json:"backcountryZoneId"`
+	WeatherForecast   WeatherForecast `json:"weatherForecast"`
 }

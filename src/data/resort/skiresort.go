@@ -18,7 +18,7 @@ type SkiResort struct {
 	CreatedAt       time.Time               `json:"createdAt"`
 	LastUpdated     time.Time               `json:"lastUpdated"`
 	SnowReport      SnowReport              `json:"snowReport"`
-	WeatherForecast weather.Forecast        `json:"weatherForecast"`
+	WeatherForecast weather.ForecastResort  `json:"weatherForecast"`
 	TrailReport     TrailReport             `json:"trailReport"`
 	LiftReport      LiftReport              `json:"liftReport"`
 	Version         int32                   `json:"version"`

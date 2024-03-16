@@ -35,7 +35,6 @@ func Resort(w http.ResponseWriter, r *http.Request, m *data.Models) {
 	case http.MethodDelete:
 		DeleteResort(w, r, m)
 	}
-
 }
 
 // SaveNewResort Saves a new resort and returns a status code to the client
