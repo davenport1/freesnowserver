@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+// SkiResort represents a ski resort entity with various properties such as ID, name, coordinates, etc.
+// All times are in UTC. A timezone is also saved for computation of time to be done when accessing data
 type SkiResort struct {
 	ID              int64                   `json:"id"`
 	ResortName      string                  `json:"resortName"`
@@ -22,11 +24,15 @@ type SkiResort struct {
 	Version         int32                   `json:"version"`
 }
 
+// SkiResortModel provides methods to interact with ski resort data in the database.
 type SkiResortModel struct {
-	Db *sql.DB
+	Db *sql.DB // Db represents the database connection.
 }
 
-// InsertNewResort - Creates a new resort with the given resort.
+// InsertNewResort inserts a new ski resort record into the database.
+// It takes a pointer to a SkiResort struct as input.
+// The created_at field is set to the current UTC time, and the timezone is set to "PST".
+// It returns an error if the insertion fails.
 func (s SkiResortModel) InsertNewResort(resort *SkiResort) error {
 	resort.CreatedAt = time.Now().UTC()
 	timezone := "PST"
@@ -44,6 +50,8 @@ func (s SkiResortModel) InsertNewResort(resort *SkiResort) error {
 	return s.Db.QueryRow(query, args...).Scan(&resort.ID, &resort.CreatedAt, &resort.Version)
 }
 
+// DeleteResort deletes a ski resort record from the database based on the provided ID.
+// It returns an error if the deletion fails or if the record does not exist.
 func (s SkiResortModel) DeleteResort(id int64) error {
 	query := `
  	DELETE FROM ski_resort
@@ -66,6 +74,9 @@ func (s SkiResortModel) DeleteResort(id int64) error {
 	return nil
 }
 
+// GetSkiResortByName retrieves a ski resort record from the database based on the provided name.
+// It returns a pointer to a SkiResort struct if the record is found, or nil if not found.
+// It returns an error if the retrieval fails.
 func (s SkiResortModel) GetSkiResortByName(name string) (*SkiResort, error) {
 	// handle empty name at controller, validation at middleware
 	query := `
@@ -93,6 +104,9 @@ func (s SkiResortModel) GetSkiResortByName(name string) (*SkiResort, error) {
 	return &skiResort, nil
 }
 
+// GetAllResorts retrieves all ski resort records from the database.
+// It returns a slice of pointers to SkiResort structs representing all resorts.
+// It returns an error if the retrieval fails.
 func (s SkiResortModel) GetAllResorts() ([]*SkiResort, error) {
 	query := `
 	SELECT id, resort_name, created_at, version

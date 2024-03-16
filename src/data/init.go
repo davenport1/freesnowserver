@@ -7,6 +7,8 @@ import (
 )
 
 // Initialize - initializes the database connection and returns a Models struct to the calling function
+// Parameters - cfg configuration for connection string, logger
+// Throws an error if there is an error opening the connection or pinging the database
 func Initialize(cfg *config.Config, logger *log.Logger) Models {
 	// connect to database
 	db, err := sql.Open("postgres", cfg.DSN)

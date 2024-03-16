@@ -31,6 +31,8 @@ func writeJSON(w http.ResponseWriter, status int, data envelope, headers http.He
 	return nil
 }
 
+// readJSON deserializes the data from json
+// returns nil if JSON is successfully deserialized
 func readJSON(w http.ResponseWriter, r *http.Request, dst any) error {
 	maxBytes := 1_048_576
 	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))
