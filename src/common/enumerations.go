@@ -3,12 +3,19 @@ package common
 type IEnum interface {
 	String() string
 	Ordinal() int
+	IsValid() bool
 }
 
 type OvercastLevel int
 type TrailStatus int
 type LiftStatus int
 type TrailDifficulty int
+type AvalancheAspect int
+type AvalancheElevation int
+type AvalancheDanger int
+type AvalancheSize int
+type AvalancheProblemType int
+type AvalancheLikelihood int
 
 const (
 	Clear OvercastLevel = iota
@@ -34,6 +41,59 @@ const (
 	Blue
 	Black
 	DoubleBlack
+)
+
+const (
+	North AvalancheAspect = 1 << iota
+	NorthWest
+	West
+	SouthWest
+	South
+	SouthEast
+	East
+	NorthEast
+)
+
+const (
+	BelowTreeline AvalancheElevation = 1 << iota
+	AtTreeLine
+	AboveTreeline
+)
+
+const (
+	NoRating AvalancheDanger = iota
+	Low
+	Moderate
+	Considerable
+	High
+	Extreme
+)
+
+const (
+	D1 AvalancheSize = iota
+	D2
+	D3
+	D4
+	D5
+)
+
+const (
+	WindSlab AvalancheProblemType = 1 << iota
+	StormSlab
+	PersistentSlab
+	LooseDry
+	PersistentWeakLayer
+	CorniceFall
+	Glide
+	WetSnow
+)
+
+const (
+	Unlikely AvalancheLikelihood = iota + 1
+	Possible
+	Likely
+	VeryLikely
+	Certain
 )
 
 func (o OvercastLevel) String() string {
