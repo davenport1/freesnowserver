@@ -30,3 +30,6 @@ type ForecastBackcountry struct {
 	BackcountryZoneId int64           `json:"backcountryZoneId"`
 	WeatherForecast   WeatherForecast `json:"weatherForecast"`
 }
+
+type ForecastGeneral struct {
+}
