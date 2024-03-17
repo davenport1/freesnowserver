@@ -19,6 +19,9 @@ type TrailDifficulty int
 type AvalancheAspect int
 type AvalancheElevation int
 type AvalancheDanger int
+type AvalancheDangerAbove int
+type AvalancheDangerAt int
+type AvalancheDangerBelow int
 type AvalancheSize int
 type AvalancheProblemType int
 type AvalancheLikelihood int
