@@ -50,7 +50,6 @@ func (l *LiftReportModel) UpdateAllLiftsForExistingResort(reports []LiftReport) 
 // It takes a pointer to a LiftReport struct as input.
 // Implementation of this method is required to interact with the database and store the lift report.
 func (l *LiftReportModel) SaveLiftReport(lr *LiftReport) error {
-	// Implementation of saving the lift report into the database goes here.
 	return nil
 }
 
@@ -58,6 +57,5 @@ func (l *LiftReportModel) SaveLiftReport(lr *LiftReport) error {
 // It takes a pointer to a LiftReport struct as input.
 // Implementation of this method is required to interact with the database and update the lift report.
 func (l *LiftReportModel) UpdateLiftReport(lr *LiftReport) error {
-	// Implementation of updating the lift report in the database goes here.
 	return nil
 }
