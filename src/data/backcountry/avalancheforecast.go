@@ -23,6 +23,8 @@ type AvalancheForecast struct {
 	CurrentWeather      weather.ForecastBackcountry `json:"currentWeather"`
 }
 
+// AvalancheProblem represents individual avalanche problems. Avalanche forecasts can (and usually do)
+// have multiple of these
 type AvalancheProblem struct {
 	ID                  int                         `json:"id"`
 	AdditionalNotes     string                      `json:"additionalNotes"`
@@ -34,6 +36,7 @@ type AvalancheProblem struct {
 	Size                common.AvalancheSize        `json:"size"`
 }
 
+// AvalancheForecastModel provides the connection between the models and database
 type AvalancheForecastModel struct {
 	Db *sql.DB
 }

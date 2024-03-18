@@ -1,6 +1,7 @@
 package resort
 
 import (
+	"database/sql"
 	"freesnow/common"
 	"time"
 )
@@ -12,4 +13,8 @@ type TrailReport struct {
 	Difficulty  common.TrailDifficulty `json:"difficulty"`
 	Status      common.TrailStatus     `json:"status"`
 	LastUpdated time.Time              `json:"lastUpdated"`
+}
+
+type TrailReportModel struct {
+	Db *sql.DB
 }
