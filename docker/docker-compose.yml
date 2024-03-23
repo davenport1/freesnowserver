@@ -18,4 +18,4 @@ services:
       POSTGRES_PASSWORD: mysecretpassword
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-      - /Users/matthewdavenport/Work/postgres/data:/var/lib/postgresql/data
+     # - /Users/matthewdavenport/Work/postgres/data:/var/lib/postgresql/data

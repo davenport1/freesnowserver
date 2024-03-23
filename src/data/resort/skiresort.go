@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"freesnow/data/coordinates"
 	"freesnow/data/weather"
 	"time"
 )
@@ -12,16 +11,18 @@ import (
 // SkiResort represents a ski resort entity with various properties such as ID, name, coordinates, etc.
 // All times are in UTC. A timezone is also saved for computation of time to be done when accessing data
 type SkiResort struct {
-	ID              int64                   `json:"id"`
-	ResortName      string                  `json:"resortName"`
-	Coordinates     coordinates.Coordinates `json:"coordinates"`
-	CreatedAt       time.Time               `json:"createdAt"`
-	LastUpdated     time.Time               `json:"lastUpdated"`
-	SnowReport      SnowReport              `json:"snowReport"`
-	WeatherForecast weather.ForecastResort  `json:"weatherForecast"`
-	TrailReport     TrailReport             `json:"trailReport"`
-	LiftReport      LiftReport              `json:"liftReport"`
-	Version         int32                   `json:"version"`
+	ID              int64                  `json:"id"`
+	ResortName      string                 `json:"resortName"`
+	Latitude        float64                `json:"latitude"`
+	Longitude       float64                `json:"longitude"`
+	Timezone        string                 `json:"timezone"`
+	CreatedAt       time.Time              `json:"createdAt"`
+	LastUpdated     time.Time              `json:"lastUpdated"`
+	SnowReport      SnowReport             `json:"snowReport"`
+	WeatherForecast weather.ForecastResort `json:"weatherForecast"`
+	TrailReport     TrailReport            `json:"trailReport"`
+	LiftReport      LiftReport             `json:"liftReport"`
+	Version         int32                  `json:"version"`
 }
 
 // SkiResortModel provides methods to interact with ski resort data in the database.
