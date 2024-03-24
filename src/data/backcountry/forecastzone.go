@@ -2,6 +2,8 @@ package backcountry
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 	"freesnow/common"
 	"freesnow/data/weather"
 	"time"
@@ -18,6 +20,7 @@ type ForecastStation struct {
 	Longitude     float64   `json:"longitude"`
 	Timezone      string    `json:"timezone"`
 	NumberOfZones int64     `json:"numberOfZones"`
+	ExternalId    int64     `json:"externalId"`
 }
 
 // ForecastZone - represents the zone that gets avalanche forecasts in terms of location, dates it has been updated,
@@ -33,6 +36,7 @@ type ForecastZone struct {
 	Timezone          string                      `json:"timezone"`
 	CurrentForecast   AvalancheForecast           `json:"currentForecast"`
 	CurrentWeather    weather.ForecastBackcountry `json:"currentWeather"`
+	ExternalId        int64                       `json:"externalId"`
 }
 
 // ForecastZoneModel - uses the db connection for CRUD
@@ -44,7 +48,7 @@ func (f ForecastZoneModel) SaveNewForecastStation(station *ForecastStation) erro
 	station.CreatedAt = time.Now().UTC()
 
 	query := `
- 	INSERT INTO forecast_station (station_name, created_at, last_updated, time_zone)
+ 	INSERT INTO forecast_station (station_name, created_at, last_updated, timezone)
  	VALUES ($1. $2, $3, $4)
  	RETURNING id`
 
@@ -70,7 +74,7 @@ func (f ForecastZoneModel) SaveNewForecastZone(zone *ForecastZone) error {
 	zone.CreatedAt = time.Now().UTC()
 
 	query := `
-	INSERT INTO forecast_zone (zone_name, forecast_station_id, created_at, last_updated, time_zone)
+	INSERT INTO forecast_zone (zone_name, forecast_station_id, created_at, last_updated, timezone)
 	VALUES($1, $2, $3, $4, $5)
 	RETURNING id`
 
@@ -94,16 +98,147 @@ func (f ForecastZoneModel) SaveNewForecastZone(zone *ForecastZone) error {
 // or an error if none are found.
 // Takes the zoneName argument as a string
 func (f ForecastZoneModel) GetForecastZoneByName(zoneName string) (*ForecastZone, error) {
-	return nil, nil
+	query := `
+	SELECT 
+	    id, 
+	    forecast_station_id, 
+	    zone_name, 
+	    created_at,
+	    last_updated,
+	    ST_X(location),
+	    ST_Y(location),
+	    timezone,
+	    external_id
+	FROM forecast_zone 
+	WHERE zone_name like '%$1%'
+	ORDER BY created_at DESC
+	LIMIT 1;`
+
+	var zone ForecastZone
+	if err := f.Db.QueryRow(query, zoneName).Scan(
+		&zone.ID,
+		&zone.ForecastStationId,
+		&zone.Name,
+		&zone.CreatedAt,
+		&zone.LastUpdated,
+		&zone.Longitude,
+		&zone.Latitude,
+		&zone.Timezone,
+		&zone.ExternalId); err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, errors.New("record was not found for the given zone name")
+		default:
+			return nil, err
+		}
+	}
+
+	return &zone, nil
 }
 
 // GetForecastZoneById gets the forecast zone by the id passed, or an error if none are found.
 // Takes the id as an integer
 func (f ForecastZoneModel) GetForecastZoneById(id int) (*ForecastZone, error) {
-	return nil, nil
+	query := `
+	SELECT 
+	    id, 
+	    forecast_station_id, 
+	    zone_name, 
+	    created_at,
+	    last_updated,
+	    ST_X(location),
+	    ST_Y(location),
+	    timezone,
+	    external_id
+	FROM forecast_zone 
+	WHERE id = $1
+	ORDER BY created_at DESC
+	LIMIT 1;`
+
+	var zone ForecastZone
+	if err := f.Db.QueryRow(query, id).Scan(
+		&zone.ID,
+		&zone.ForecastStationId,
+		&zone.Name,
+		&zone.CreatedAt,
+		&zone.LastUpdated,
+		&zone.Longitude,
+		&zone.Latitude,
+		&zone.Timezone,
+		&zone.ExternalId); err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, errors.New("record was not found for the given zone name")
+		default:
+			return nil, err
+		}
+	}
+
+	return &zone, nil
 }
 
 // GetAllForecastZones returns all the forecast zones currently stored in the database
-func (f ForecastZoneModel) GetAllForecastZones() (*[]ForecastZone, error) {
-	return nil, nil
+func (f ForecastZoneModel) GetAllForecastZones() ([]*ForecastZone, error) {
+	query := `
+	SELECT * 
+	FROM forecast_zone
+	ORDER BY zone_name DESC`
+
+	rows, err := f.Db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			fmt.Println("Failed to close rows")
+		}
+	}(rows)
+
+	var zones []*ForecastZone
+
+	for rows.Next() {
+		var zone ForecastZone
+
+		if err := rows.Scan(
+			&zone.ID,
+			&zone.ForecastStationId,
+			&zone.Name,
+			&zone.CreatedAt,
+			&zone.LastUpdated,
+			&zone.Longitude,
+			&zone.Latitude,
+			&zone.Timezone,
+			&zone.ExternalId,
+		); err != nil {
+			return nil, err
+		}
+
+		zones = append(zones, &zone)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return zones, nil
+}
+
+func (f ForecastZoneModel) ZoneExistsByExternalId(externalId int) bool {
+	query := `
+ 	SELECT COUNT(id)
+	FROM forecast_zone 
+	WHERE external_id = $1`
+
+	args := []interface{}{
+		externalId,
+	}
+
+	var count int
+	if err := f.Db.QueryRow(query, args...).Scan(count); err != nil {
+		return false
+	}
+
+	return count > 0
 }
