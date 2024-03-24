@@ -111,8 +111,10 @@ CREATE TABLE IF NOT EXISTS weather_forecast_day(
     sunset TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Sample data for COAC and the Central Cascades.
 INSERT INTO forecast_station (station_name, location, timezone, external_id, number_of_zones)
 VALUES ('Central Oregon Avalanche Center', ST_GeomFromText('POINT(44.051 -121.669)', 4326),'PST', 'COAA', 2);
 
-
+INSERT INTO forecast_zone (forecast_station_id, zone_name, location, timezone, external_id)
+VALUES (1, 'Central Cascades', ST_GeomFromText('Point(44.13171 -121.79306)', 4326), 'PST', 1619);
 
