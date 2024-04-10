@@ -29,13 +29,41 @@ type problemRequestModel struct {
 	Size            int    `json:"size"`
 }
 
+func problemFrom(problem *backcountry.AvalancheProblem) problemRequestModel {
+	var p problemRequestModel
+	p.AdditionalNotes = problem.AdditionalNotes
+	p.Aspects = int(problem.Aspect)
+	p.Elevations = int(problem.Elevation)
+	p.ProblemType = int(problem.ProblemType)
+	p.Likelihood = int(problem.Likelihood)
+	p.Size = int(problem.Size)
+	return p
+}
+
+func forecastFrom(forecast *backcountry.AvalancheForecast) forecastRequestModel {
+	var f forecastRequestModel
+	f.ZoneId = forecast.ForecastZoneId
+	f.ForecastDate = forecast.ForecastDate
+	f.BottomLine = forecast.BottomLine
+	f.OverallDanger = int(forecast.OverallDanger)
+	f.DangerAboveTreeline = int(forecast.DangerAboveTreeline)
+	f.DangerAtTreeLine = int(forecast.DangerAtTreeline)
+	f.DangerBelowTreeline = int(forecast.DangerBelowTreeline)
+
+	for _, problem := range forecast.AvalancheProblems {
+		problemRequest := problemFrom(problem)
+		f.AvalancheProblems = append(f.AvalancheProblems, problemRequest)
+	}
+
+	return f
+}
+
 // GetAllForecasts - More of a troubleshooting/testing endpoint. Possible will be used for ML
 func GetAllForecasts(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-
 }
 
 // GetForecastForCoordinates - Gets the avalanche forecast for the backcountry zone that includes the coordinates given
@@ -56,7 +84,7 @@ func SaveNewForecast(w http.ResponseWriter, r *http.Request, m *data.Models) {
 		// log
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	}
-	var avalancheProblems []backcountry.AvalancheProblem
+	var avalancheProblems []*backcountry.AvalancheProblem
 
 	for _, problemRequest := range forecastRequest.AvalancheProblems {
 		newProblem := backcountry.AvalancheProblem{
@@ -68,7 +96,7 @@ func SaveNewForecast(w http.ResponseWriter, r *http.Request, m *data.Models) {
 			Size:            common.AvalancheSize(problemRequest.Size),
 		}
 
-		avalancheProblems = append(avalancheProblems, newProblem)
+		avalancheProblems = append(avalancheProblems, &newProblem)
 	}
 
 	newForecast := &backcountry.AvalancheForecast{
@@ -88,7 +116,7 @@ func SaveNewForecast(w http.ResponseWriter, r *http.Request, m *data.Models) {
 
 	// set headers?
 	if err := writeJSON(w,
-		int(http.StatusCreated),
+		http.StatusCreated,
 		envelope{"AvalancheForecast": newForecast},
 		nil,
 	); err != nil {
@@ -117,13 +145,26 @@ func GetRecentForecastByZone(w http.ResponseWriter, r *http.Request, m *data.Mod
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	}
 
-	externalIdStr := r.URL.Path[len("/v1/avalanche/zone/forecast/"):]
-	externalId, err := strconv.ParseInt(externalIdStr, 10, 64)
+	forecastZoneStr := r.URL.Path[len("/v1/avalanche/zone/forecast/"):]
+	forecastZoneId, err := strconv.ParseInt(forecastZoneStr, 10, 64)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-
 	}
-	if !m.ForecastZones.ZoneExistsByExternalId(int(externalId)) {
 
+	//if !m.ForecastZones.ZoneExistsByExternalId(int(forecastZoneId)) {
+	//	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	//}
+
+	// retrieve the forecast
+	forecast, err := m.AvalancheForecasts.GetCurrentForecastForZone(int(forecastZoneId))
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	}
+
+	forecastResponse := forecastFrom(forecast)
+
+	if err := writeJSON(w, 200, envelope{"forecast": forecastResponse}, nil); err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
 	}
 }

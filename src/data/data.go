@@ -15,6 +15,7 @@ type Models struct {
 	LiftReports        resort.LiftReportModel
 	TrailReports       resort.TrailReportModel
 	AvalancheForecasts backcountry.AvalancheForecastModel
+	AvalancheProblems  backcountry.AvalancheProblem
 	ForecastZones      backcountry.ForecastZoneModel
 	WeatherForecasts   weather.WeatherModel
 }

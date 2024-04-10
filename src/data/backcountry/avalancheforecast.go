@@ -2,6 +2,8 @@ package backcountry
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 	"freesnow/common"
 	"freesnow/data/weather"
 	"time"
@@ -19,7 +21,7 @@ type AvalancheForecast struct {
 	DangerAboveTreeline common.AvalancheDanger      `json:"dangerAboveTreeline"`
 	DangerAtTreeline    common.AvalancheDanger      `json:"dangerAtTreeline"`
 	DangerBelowTreeline common.AvalancheDanger      `json:"dangerBelowTreeline"`
-	AvalancheProblems   []AvalancheProblem          `json:"avalancheProblems"`
+	AvalancheProblems   []*AvalancheProblem         `json:"avalancheProblems"`
 	CurrentWeather      weather.ForecastBackcountry `json:"currentWeather"`
 }
 
@@ -97,4 +99,85 @@ func (a AvalancheForecastModel) SaveNewForecast(forecast *AvalancheForecast) err
 	}
 
 	return nil
+}
+
+func (a AvalancheForecastModel) GetCurrentForecastForZone(zoneId int) (*AvalancheForecast, error) {
+	query := `
+	SELECT * 
+	FROM avalanche_forecast 
+	WHERE forecast_zone_id = $1 
+	ORDER BY forecast_date DESC 
+	LIMIT 1`
+
+	var forecast AvalancheForecast
+	if err := a.Db.QueryRow(query, zoneId).Scan(
+		&forecast.ID,
+		&forecast.ForecastZoneId,
+		&forecast.ForecastDate,
+		&forecast.CreatedAt,
+		&forecast.BottomLine,
+		&forecast.OverallDanger,
+		&forecast.DangerAboveTreeline,
+		&forecast.DangerAtTreeline,
+		&forecast.DangerBelowTreeline); err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, errors.New("no forecasts exist for the zone id")
+		default:
+			return nil, err
+		}
+	}
+
+	problems, err := a.GetAvalancheProblemsForForecastId(forecast.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, problem := range problems {
+		forecast.AvalancheProblems = append(forecast.AvalancheProblems, problem)
+	}
+
+	return &forecast, nil
+}
+
+func (a AvalancheForecastModel) GetAvalancheProblemsForForecastId(forecastId int) ([]*AvalancheProblem, error) {
+	query := `
+	SELECT * FROM avalanche_problem 
+	WHERE avalanche_forecast_id = $1`
+
+	var problems []*AvalancheProblem
+	rows, err := a.Db.Query(query, forecastId)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func(rows *sql.Rows) {
+		if err := rows.Close(); err != nil {
+			fmt.Println("failed to close rows")
+		}
+	}(rows)
+
+	for rows.Next() {
+		var problem AvalancheProblem
+		if err := rows.Scan(
+			&problem.ID,
+			&problem.AvalancheForecastId,
+			&problem.AdditionalNotes,
+			&problem.Aspect,
+			&problem.Elevation,
+			&problem.ProblemType,
+			&problem.Likelihood,
+			&problem.Size,
+		); err != nil {
+			return nil, err
+		}
+
+		problems = append(problems, &problem)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return problems, nil
 }
