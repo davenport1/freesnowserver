@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"freesnow/common"
 	"freesnow/data/weather"
+	_ "github.com/lib/pq"
 	"time"
 )
 
@@ -43,6 +44,7 @@ type AvalancheForecastModel struct {
 	Db *sql.DB
 }
 
+// SaveNewForecast Saves an avalanche forecast
 func (a AvalancheForecastModel) SaveNewForecast(forecast *AvalancheForecast) error {
 	forecastQuery := `
 	INSERT INTO avalanche_forecast (
@@ -101,6 +103,8 @@ func (a AvalancheForecastModel) SaveNewForecast(forecast *AvalancheForecast) err
 	return nil
 }
 
+// GetCurrentForecastForZone retrieves a forecast for the specified zone id. This is the internally
+// used zone id, use the GetCurrentForecastForExternalZoneId for externally identified zones
 func (a AvalancheForecastModel) GetCurrentForecastForZone(zoneId int) (*AvalancheForecast, error) {
 	query := `
 	SELECT * 
@@ -140,6 +144,7 @@ func (a AvalancheForecastModel) GetCurrentForecastForZone(zoneId int) (*Avalanch
 	return &forecast, nil
 }
 
+// GetAvalancheProblemsForForecastId retrieves all problems for the forecast linked to the forecast id
 func (a AvalancheForecastModel) GetAvalancheProblemsForForecastId(forecastId int) ([]*AvalancheProblem, error) {
 	query := `
 	SELECT * FROM avalanche_problem 
@@ -181,3 +186,7 @@ func (a AvalancheForecastModel) GetAvalancheProblemsForForecastId(forecastId int
 
 	return problems, nil
 }
+
+//func (a AvalancheForecastModel) GetAvalancheForecastForDate(forecastDate time.Time, zoneId int) *AvalancheForecast {
+//
+//}

@@ -85,7 +85,7 @@ const (
 )
 
 const (
-	WindSlab AvalancheProblemType = 1 << iota
+	WindSlab AvalancheProblemType = iota
 	StormSlab
 	PersistentSlab
 	LooseDry
